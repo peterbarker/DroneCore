@@ -268,5 +268,14 @@ private:
     std::vector<std::future<void>> _pending_futures;
 };
 
+class APMAVLinkSystem : public MAVLinkSystem
+{
+public:
+    explicit APMAVLinkSystem(DroneCoreImpl &parent,
+                             uint8_t system_id,
+                             uint8_t component_id) :
+        MAVLinkSystem(parent, system_id, component_id) { }
+    ~APMAVLinkSystem() {}
+};
 
 } // namespace dronecore
