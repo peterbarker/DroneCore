@@ -76,6 +76,7 @@ void System::process_mavlink_message(const mavlink_message_t &message)
         }
         mavlink_heartbeat_t hbeat;
         mavlink_msg_heartbeat_decode(&message, &hbeat);
+        _autopilot_type = (MAV_AUTOPILOT)hbeat.autopilot;
         switch (hbeat.autopilot) {
         case MAV_AUTOPILOT_PX4:
             _mavlink_system = std::make_shared<MAVLinkSystem>(_parent,

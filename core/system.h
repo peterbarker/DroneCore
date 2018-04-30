@@ -74,6 +74,8 @@ public:
      */
     const System &operator=(const System &) = delete;
 
+    MAV_AUTOPILOT autopilot_type() { return _autopilot_type; }
+
 private:
 
     void add_new_component(uint8_t component_id);
@@ -98,6 +100,8 @@ private:
     uint8_t _system_id;
     uint8_t _component_id;
     DroneCoreImpl &_parent;
+
+    MAV_AUTOPILOT _autopilot_type;
 };
 
 
