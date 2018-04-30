@@ -94,6 +94,10 @@ private:
     friend PluginImplBase;
 
     std::shared_ptr<MAVLinkSystem> _mavlink_system;
+
+    uint8_t _system_id;
+    uint8_t _component_id;
+    DroneCoreImpl &_parent;
 };
 
 
