@@ -25,7 +25,7 @@ public:
     void init() override;
     void deinit() override;
 
-    void enable() override;
+    virtual void enable() override;
     void disable() override;
 
     Telemetry::Result set_rate_position(double rate_hz);
@@ -80,7 +80,6 @@ public:
     void health_all_ok_async(Telemetry::health_all_ok_callback_t &callback);
     void rc_status_async(Telemetry::rc_status_callback_t &callback);
 
-private:
     void set_position(Telemetry::Position position);
     void set_home_position(Telemetry::Position home_position);
     void set_in_air(bool in_air);
@@ -110,15 +109,9 @@ private:
     void process_heartbeat(const mavlink_message_t &message);
     void process_rc_channels(const mavlink_message_t &message);
 
-    void receive_param_cal_gyro(bool success, int value);
-    void receive_param_cal_accel(bool success, int value);
-    void receive_param_cal_mag(bool success, int value);
-#ifdef LEVEL_CALIBRATION
-    void receive_param_cal_level(bool success, float value);
-#endif
-
     void receive_rc_channels_timeout();
 
+private:
 
     static Telemetry::Result telemetry_result_from_command_result(
         MAVLinkCommands::Result command_result);
@@ -187,6 +180,22 @@ private:
     double _position_rate_hz;
 
     void *_timeout_cookie = nullptr;
+
+    virtual void enable_get_params() {};
+
+};
+
+class PX4TelemetryImpl : public TelemetryImpl
+{
+protected:
+    void enable_get_params() override;
+private:
+    void receive_param_cal_gyro(bool success, int value);
+    void receive_param_cal_accel(bool success, int value);
+    void receive_param_cal_mag(bool success, int value);
+#ifdef LEVEL_CALIBRATION
+    void receive_param_cal_level(bool success, float value);
+#endif
 };
 
 } // namespace dronecore

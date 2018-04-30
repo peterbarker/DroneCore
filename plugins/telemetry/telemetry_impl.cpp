@@ -106,34 +106,39 @@ void TelemetryImpl::deinit()
 
 void TelemetryImpl::enable()
 {
-
     _parent->register_timeout_handler(
         std::bind(&TelemetryImpl::receive_rc_channels_timeout, this), 1.0, &_timeout_cookie);
+
+    enable_get_params();
+}
+
+void PX4TelemetryImpl::enable_get_params()
+{
 
     // FIXME: The calibration check should eventually be better than this.
     //        For now, we just do the same as QGC does.
 
     _parent->get_param_int_async(std::string("CAL_GYRO0_ID"),
-                                 std::bind(&TelemetryImpl::receive_param_cal_gyro,
+                                 std::bind(&PX4TelemetryImpl::receive_param_cal_gyro,
                                            this,
                                            std::placeholders::_1,
                                            std::placeholders::_2));
 
     _parent->get_param_int_async(std::string("CAL_ACC0_ID"),
-                                 std::bind(&TelemetryImpl::receive_param_cal_accel,
+                                 std::bind(&PX4TelemetryImpl::receive_param_cal_accel,
                                            this,
                                            std::placeholders::_1,
                                            std::placeholders::_2));
 
     _parent->get_param_int_async(std::string("CAL_MAG0_ID"),
-                                 std::bind(&TelemetryImpl::receive_param_cal_mag,
+                                 std::bind(&PX4TelemetryImpl::receive_param_cal_mag,
                                            this,
                                            std::placeholders::_1,
                                            std::placeholders::_2));
 
 #ifdef LEVEL_CALIBRATION
     _parent->get_param_float_async(std::string("SENS_BOARD_X_OFF"),
-                                   std::bind(&TelemetryImpl::receive_param_cal_level,
+                                   std::bind(&PX4TelemetryImpl::receive_param_cal_level,
                                              this,
                                              std::placeholders::_1,
                                              std::placeholders::_2));
@@ -535,7 +540,7 @@ Telemetry::FlightMode TelemetryImpl::to_flight_mode_from_custom_mode(uint32_t cu
     }
 }
 
-void TelemetryImpl::receive_param_cal_gyro(bool success, int value)
+void PX4TelemetryImpl::receive_param_cal_gyro(bool success, int value)
 {
     if (!success) {
         LogErr() << "Error: Param for gyro cal failed.";
@@ -546,7 +551,7 @@ void TelemetryImpl::receive_param_cal_gyro(bool success, int value)
     set_health_gyrometer_calibration(ok);
 }
 
-void TelemetryImpl::receive_param_cal_accel(bool success, int value)
+void PX4TelemetryImpl::receive_param_cal_accel(bool success, int value)
 {
     if (!success) {
         LogErr() << "Error: Param for accel cal failed.";
@@ -557,7 +562,7 @@ void TelemetryImpl::receive_param_cal_accel(bool success, int value)
     set_health_accelerometer_calibration(ok);
 }
 
-void TelemetryImpl::receive_param_cal_mag(bool success, int value)
+void PX4TelemetryImpl::receive_param_cal_mag(bool success, int value)
 {
     if (!success) {
         LogErr() << "Error: Param for mag cal failed.";
@@ -569,7 +574,7 @@ void TelemetryImpl::receive_param_cal_mag(bool success, int value)
 }
 
 #ifdef LEVEL_CALIBRATION
-void TelemetryImpl::receive_param_cal_level(bool success, float value)
+void PX4TelemetryImpl::receive_param_cal_level(bool success, float value)
 {
     if (!success) {
         LogErr() << "Error: Param for level cal failed.";
