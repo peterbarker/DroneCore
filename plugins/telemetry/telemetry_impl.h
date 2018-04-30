@@ -61,7 +61,7 @@ public:
     Telemetry::Battery get_battery() const;
     Telemetry::FlightMode get_flight_mode() const;
     Telemetry::Health get_health() const;
-    bool get_health_all_ok() const;
+    virtual bool get_health_all_ok() const;
     Telemetry::RCStatus get_rc_status() const;
 
     void position_async(Telemetry::position_callback_t &callback);
@@ -210,7 +210,7 @@ public:
         TelemetryImpl(system)
         { };
     ~APTelemetryImpl() {}
-
+    bool get_health_all_ok() const;
 protected:
 private:
 };

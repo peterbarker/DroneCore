@@ -730,6 +730,11 @@ Telemetry::Health TelemetryImpl::get_health() const
     return _health;
 }
 
+bool APTelemetryImpl::get_health_all_ok() const
+{
+    return true;
+}
+
 bool TelemetryImpl::get_health_all_ok() const
 {
     std::lock_guard<std::mutex> lock(_health_mutex);
