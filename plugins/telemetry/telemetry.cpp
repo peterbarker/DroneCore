@@ -7,9 +7,19 @@
 namespace dronecore {
 
 Telemetry::Telemetry(System &system) :
-    PluginBase(),
-    _impl { new TelemetryImpl(system) }
+    PluginBase()
 {
+    switch (system.autopilot_type()) {
+    case MAV_AUTOPILOT_PX4:
+        _impl = new PX4TelemetryImpl(system);
+        break;
+    case MAV_AUTOPILOT_ARDUPILOTMEGA:
+        _impl = new APTelemetryImpl(system);
+        break;
+    default:
+        ::fprintf(stderr, "No telemetry available for (%u)\n", system.autopilot_type());
+        abort();
+    }
 }
 
 Telemetry::~Telemetry()

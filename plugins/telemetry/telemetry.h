@@ -634,7 +634,7 @@ public:
 
 private:
     /** @private Underlying implementation, set at instantiation */
-    std::unique_ptr<TelemetryImpl> _impl;
+    TelemetryImpl *_impl;
 };
 
 bool operator==(const Telemetry::Position &lhs, const Telemetry::Position &rhs);
