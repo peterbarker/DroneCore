@@ -71,9 +71,17 @@ void System::add_new_component(uint8_t component_id)
 void System::process_mavlink_message(const mavlink_message_t &message)
 {
     if (_mavlink_system == nullptr) {
-        _mavlink_system = std::make_shared<MAVLinkSystem>(_parent,
-                                                          _system_id,
-                                                          _component_id);
+        if (message.msgid == MAVLINK_MSG_ID_HEARTBEAT) {
+            mavlink_heartbeat_t hbeat;
+            mavlink_msg_heartbeat_decode(&message, &hbeat);
+            switch (hbeat.autopilot) {
+            case MAV_AUTOPILOT_PX4:
+                _mavlink_system = std::make_shared<MAVLinkSystem>(_parent,
+                                                                  _system_id,
+                                                                  _component_id);
+                break;
+            }
+        }
     }
     return _mavlink_system->process_mavlink_message(message);
 }
