@@ -181,14 +181,19 @@ private:
 
     void *_timeout_cookie = nullptr;
 
-    virtual void enable_get_params() {};
-
 };
 
 class PX4TelemetryImpl : public TelemetryImpl
 {
+public:
+
+    PX4TelemetryImpl(System &system) :
+        TelemetryImpl(system)
+        { };
+    ~PX4TelemetryImpl() {}
+
 protected:
-    void enable_get_params() override;
+    void enable() override;
 private:
     void receive_param_cal_gyro(bool success, int value);
     void receive_param_cal_accel(bool success, int value);
@@ -196,6 +201,18 @@ private:
 #ifdef LEVEL_CALIBRATION
     void receive_param_cal_level(bool success, float value);
 #endif
+};
+
+class APTelemetryImpl : public TelemetryImpl
+{
+public:
+    APTelemetryImpl(System &system) :
+        TelemetryImpl(system)
+        { };
+    ~APTelemetryImpl() {}
+
+protected:
+private:
 };
 
 } // namespace dronecore

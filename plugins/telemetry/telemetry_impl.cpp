@@ -108,13 +108,11 @@ void TelemetryImpl::enable()
 {
     _parent->register_timeout_handler(
         std::bind(&TelemetryImpl::receive_rc_channels_timeout, this), 1.0, &_timeout_cookie);
-
-    enable_get_params();
 }
 
-void PX4TelemetryImpl::enable_get_params()
+void PX4TelemetryImpl::enable()
 {
-
+    TelemetryImpl::enable();
     // FIXME: The calibration check should eventually be better than this.
     //        For now, we just do the same as QGC does.
 
