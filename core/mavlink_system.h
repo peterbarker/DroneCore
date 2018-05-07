@@ -176,6 +176,8 @@ private:
     static bool is_autopilot(uint8_t comp_id);
     static bool is_camera(uint8_t comp_id);
 
+    MAV_AUTOPILOT autopilot;
+
     bool have_uuid() const { return _uuid != 0 && _uuid_initialized; }
 
     void process_heartbeat(const mavlink_message_t &message);
@@ -191,6 +193,16 @@ private:
     static void send_heartbeat(MAVLinkSystem &self);
 
     // Last argument will hold Flight mode command.
+    MAVLinkCommands::Result
+    make_command_flight_mode_ap(FlightMode mode,
+                                uint8_t component_id,
+                                MAVLinkCommands::CommandLong &command);
+
+    MAVLinkCommands::Result
+    make_command_flight_mode_px4(FlightMode mode,
+                                 uint8_t component_id,
+                                 MAVLinkCommands::CommandLong &command);
+
     MAVLinkCommands::Result
     make_command_flight_mode(FlightMode mode,
                              uint8_t component_id,

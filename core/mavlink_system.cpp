@@ -183,6 +183,8 @@ void MAVLinkSystem::process_heartbeat(const mavlink_message_t &message)
         _uuid_initialized = true;
     }
 
+    autopilot = (MAV_AUTOPILOT)heartbeat.autopilot;
+
     set_connected();
 }
 
@@ -573,9 +575,76 @@ void MAVLinkSystem::get_param_async(const std::string &name, get_param_callback_
 }
 
 MAVLinkCommands::Result
+MAVLinkSystem::make_command_flight_mode_ap(FlightMode flight_mode,
+                                            uint8_t component_id,
+                                            MAVLinkCommands::CommandLong &command)
+{
+    const uint8_t flag_safety_armed = is_armed() ? MAV_MODE_FLAG_SAFETY_ARMED : 0;
+
+    const uint8_t mode = MAV_MODE_FLAG_CUSTOM_MODE_ENABLED
+        | flag_safety_armed;
+
+    // Note: the safety flag is not needed in future versions of the PX4 Firmware
+    //       but want to be rather safe than sorry.
+    uint8_t custom_mode;
+    uint8_t custom_sub_mode = 0;
+
+    switch (flight_mode) {
+        case FlightMode::HOLD:
+            custom_mode = COPTER_MODE_GUIDED;
+            break;
+        case FlightMode::RETURN_TO_LAUNCH:
+            custom_mode = COPTER_MODE_RTL;
+            break;
+        case FlightMode::TAKEOFF:
+            custom_mode = COPTER_MODE_ALT_HOLD; //hmmm.
+            break;
+        case FlightMode::LAND:
+            custom_mode = COPTER_MODE_LAND;
+            break;
+        case FlightMode::MISSION:
+            custom_mode = COPTER_MODE_AUTO;
+            break;
+        case FlightMode::FOLLOW_ME:
+            custom_mode = COPTER_MODE_GUIDED; // hmmmm
+            break;
+        case FlightMode::OFFBOARD:
+            custom_mode = COPTER_MODE_GUIDED;
+            break;
+        default :
+            LogErr() << "Unknown Flight mode.";
+            return MAVLinkCommands::Result::UNKNOWN_ERROR;
+
+    }
+
+    command = MAVLinkCommands::CommandLong(); // wipe off caller's data, if any.
+
+    command.command = MAV_CMD_DO_SET_MODE;
+    command.params.param1 = float(mode);
+    command.params.param2 = float(custom_mode);
+    command.params.param3 = float(custom_sub_mode);
+    command.target_component_id = component_id;
+
+    return MAVLinkCommands::Result::SUCCESS;
+}
+
+MAVLinkCommands::Result
 MAVLinkSystem::make_command_flight_mode(FlightMode flight_mode,
                                         uint8_t component_id,
                                         MAVLinkCommands::CommandLong &command)
+{
+    switch(autopilot) {
+    case MAV_AUTOPILOT_ARDUPILOTMEGA:
+        return make_command_flight_mode_ap(flight_mode, component_id, command);
+    default:
+        return make_command_flight_mode_px4(flight_mode, component_id, command);
+    }
+}
+
+MAVLinkCommands::Result
+MAVLinkSystem::make_command_flight_mode_px4(FlightMode flight_mode,
+                                            uint8_t component_id,
+                                            MAVLinkCommands::CommandLong &command)
 {
     const uint8_t flag_safety_armed = is_armed() ? MAV_MODE_FLAG_SAFETY_ARMED : 0;
     const uint8_t flag_hitl_enabled = _hitl_enabled ? MAV_MODE_FLAG_HIL_ENABLED : 0;
