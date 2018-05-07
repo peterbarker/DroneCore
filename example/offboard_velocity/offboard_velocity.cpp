@@ -167,17 +167,42 @@ bool offb_ctrl_body(std::shared_ptr<dronecore::Offboard> offboard)
     return true;
 }
 
-int main(int, char **)
+void usage(std::string arg);
+
+int main(int argc, char **argv)
 {
     DroneCore dc;
+    std::string connection_url;
+    ConnectionResult connection_result;
 
-    ConnectionResult conn_result = dc.add_udp_connection();
-    connection_error_exit(conn_result, "Connection failed");
+    bool discovered_system = false;
+    if (argc == 1) {
+        usage(argv[0]);
+        return 1;
+    } else {
+        connection_url = argv[1];
+        connection_result = dc.add_any_connection(connection_url);
+    }
 
-    // Wait for the system to connect via heartbeat
-    while (!dc.is_connected()) {
-        std::cout << "Wait for system to connect via heartbeat" << std::endl;
-        sleep_for(seconds(1));
+    if (connection_result != ConnectionResult::SUCCESS) {
+        std::cout << ERROR_CONSOLE_TEXT << "Connection failed: "
+                  << connection_result_str(connection_result)
+                  << NORMAL_CONSOLE_TEXT << std::endl;
+        return 1;
+    }
+
+    std::cout << "Waiting to discover system..." << std::endl;
+    dc.register_on_discover([&discovered_system](uint64_t uuid) {
+        std::cout << "Discovered system with UUID: " << uuid << std::endl;
+        discovered_system = true;
+    });
+
+    // We usually receive heartbeats at 1Hz, therefore we should find a system after around 2 seconds.
+    sleep_for(seconds(2));
+
+    if (!discovered_system) {
+        std::cout << ERROR_CONSOLE_TEXT << "No system found, exiting." << NORMAL_CONSOLE_TEXT << std::endl;
+        return 1;
     }
 
     // System got discovered.
@@ -223,3 +248,14 @@ int main(int, char **)
 
     return EXIT_SUCCESS;
 }
+
+void usage(std::string arg)
+{
+    std::cout << NORMAL_CONSOLE_TEXT << "Usage : " << arg << " [connection_url]" << std::endl
+              << "Connection URL format should be :" << std::endl
+              << " For TCP : tcp://[server_host][:server_port]" << std::endl
+              << " For UDP : udp://[bind_host][:bind_port]" << std::endl
+              << " For Serial : serial:///path/to/serial/dev[:baudrate]" << std::endl;
+    std::cout << "Default connection URL is udp://:14540" << std::endl;
+}
+void usage(std::string arg);
