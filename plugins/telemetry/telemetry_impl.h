@@ -104,10 +104,12 @@ public:
     void process_attitude_quaternion(const mavlink_message_t &message);
     void process_mount_orientation(const mavlink_message_t &message);
     void process_gps_raw_int(const mavlink_message_t &message);
-    void process_extended_sys_state(const mavlink_message_t &message);
+    virtual void process_extended_sys_state(const mavlink_message_t &message);
     void process_sys_status(const mavlink_message_t &message);
     void process_heartbeat(const mavlink_message_t &message);
     void process_rc_channels(const mavlink_message_t &message);
+
+    virtual void process_ekf_status_report(const mavlink_message_t &message);
 
     void receive_rc_channels_timeout();
 
@@ -213,6 +215,12 @@ public:
     bool get_health_all_ok() const;
 protected:
 private:
+
+    void process_extended_sys_state(const mavlink_message_t &message) override;
+    void process_ekf_status_report(const mavlink_message_t &message) override;
+
+    bool _ekf_ok = false;
+    bool seen_extended_sys_state = false;
 };
 
 } // namespace dronecore

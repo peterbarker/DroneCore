@@ -87,6 +87,10 @@ void TelemetryImpl::init()
         std::bind(&TelemetryImpl::process_extended_sys_state, this, _1), this);
 
     _parent->register_mavlink_message_handler(
+        MAVLINK_MSG_ID_EKF_STATUS_REPORT,
+        std::bind(&TelemetryImpl::process_ekf_status_report, this, _1), this);
+
+    _parent->register_mavlink_message_handler(
         MAVLINK_MSG_ID_SYS_STATUS,
         std::bind(&TelemetryImpl::process_sys_status, this, _1), this);
 
@@ -448,6 +452,19 @@ void TelemetryImpl::process_extended_sys_state(const mavlink_message_t &message)
 
 }
 
+void TelemetryImpl::process_ekf_status_report(const mavlink_message_t &message)
+{
+}
+
+void APTelemetryImpl::process_ekf_status_report(const mavlink_message_t &message)
+{
+    mavlink_ekf_status_report_t ekf_status_report;
+    mavlink_msg_ekf_status_report_decode(&message, &ekf_status_report);
+
+    _ekf_ok = (ekf_status_report.flags == 831);
+
+}
+
 void TelemetryImpl::process_sys_status(const mavlink_message_t &message)
 {
     mavlink_sys_status_t sys_status;
@@ -730,9 +747,16 @@ Telemetry::Health TelemetryImpl::get_health() const
     return _health;
 }
 
+void APTelemetryImpl::process_extended_sys_state(const mavlink_message_t &message)
+{
+    TelemetryImpl::process_extended_sys_state(message);
+    seen_extended_sys_state = true;
+}
+
 bool APTelemetryImpl::get_health_all_ok() const
 {
-    return true;
+    return (_ekf_ok &&
+            seen_extended_sys_state);
 }
 
 bool TelemetryImpl::get_health_all_ok() const
