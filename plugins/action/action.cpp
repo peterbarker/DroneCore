@@ -4,9 +4,21 @@
 namespace dronecore {
 
 Action::Action(System &system) :
-    PluginBase(),
-    _impl { new ActionImpl(system) }
+    PluginBase()
 {
+    switch (system.autopilot_type()) {
+    case MAV_AUTOPILOT_PX4:
+        _impl = new PX4ActionImpl(system);
+        break;
+    case MAV_AUTOPILOT_ARDUPILOTMEGA:
+        _impl = new APActionImpl(system);
+        break;
+    default:
+        ::fprintf(stderr,
+                  "No action implementation available for (%u)\n",
+                  system.autopilot_type());
+        abort();
+    }
 }
 
 Action::~Action()

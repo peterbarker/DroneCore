@@ -259,7 +259,7 @@ public:
 
 private:
     /** @private Underlying implementation, set at instantiation */
-    std::unique_ptr<ActionImpl> _impl;
+    ActionImpl *_impl;
 };
 
 } // namespace dronecore

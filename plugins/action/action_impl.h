@@ -4,6 +4,7 @@
 
 #include "action.h"
 #include "action_result.h"
+#include "system.h"
 #include "mavlink_system.h"
 #include "mavlink_include.h"
 #include "plugin_impl_base.h"
@@ -40,11 +41,15 @@ public:
     void transition_to_fixedwing_async(const Action::result_callback_t &callback);
     void transition_to_multicopter_async(const Action::result_callback_t &callback);
 
-    void set_takeoff_altitude(float relative_altitude_m);
+    virtual void set_takeoff_altitude(float relative_altitude_m);
     float get_takeoff_altitude_m() const;
 
     void set_max_speed(float speed_m_s);
     float get_max_speed_m_s() const;
+
+protected:
+
+    float _relative_takeoff_altitude_m = 2.5f;
 
 private:
     void loiter_before_takeoff_async(const Action::result_callback_t &callback);
@@ -76,11 +81,23 @@ private:
     std::atomic<bool>_vtol_transition_support_known {false};
     std::atomic<bool> _vtol_transition_possible {false};
 
-    float _relative_takeoff_altitude_m = 2.5f;
-
     float _max_speed_m_s = NAN;
 
     static constexpr uint8_t VEHICLE_MODE_FLAG_CUSTOM_MODE_ENABLED = 1;
+};
+
+class PX4ActionImpl : public ActionImpl
+{
+    using ActionImpl::ActionImpl;
+};
+
+class APActionImpl : public ActionImpl
+{
+    using ActionImpl::ActionImpl;
+
+    virtual void set_takeoff_altitude(float relative_altitude_m) {
+        _relative_takeoff_altitude_m = relative_altitude_m;
+    }
 };
 
 } // namespace dronecore
