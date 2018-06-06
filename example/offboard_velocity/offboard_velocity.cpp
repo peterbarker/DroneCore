@@ -221,10 +221,12 @@ int main(int argc, char **argv)
     action_error_exit(arm_result, "Arming failed");
     std::cout << "Armed" << std::endl;
 
+    action->set_takeoff_altitude(10.0);
+
     ActionResult takeoff_result = action->takeoff();
     action_error_exit(takeoff_result, "Takeoff failed");
     std::cout << "In Air..." << std::endl;
-    sleep_for(seconds(5));
+    sleep_for(seconds(10));
 
 
     //  using local NED co-ordinates
